@@ -1,36 +1,42 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GT7 DR Tracker</title>
   <style>
     body {
-      background-color: #121212;
-      color: #eee;
       font-family: Arial, sans-serif;
-      padding: 20px;
+      background-color: #121212;
+      color: #f0f0f0;
       text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00bfff;
     }
     table {
-      margin: auto;
+      margin: 2rem auto;
       border-collapse: collapse;
-      width: 80%;
+      width: 60%;
+      background-color: #1e1e1e;
     }
     th, td {
       border: 1px solid #444;
-      padding: 10px;
+      padding: 0.8rem;
     }
     th {
-      background-color: #333;
+      background-color: #2a2a2a;
+      color: #00ffcc;
     }
     tr:nth-child(even) {
-      background-color: #1e1e1e;
+      background-color: #2d2d2d;
     }
   </style>
 </head>
 <body>
-  <h1>Classifica DR - GT7</h1>
-  <table>
+  <h1>GT7 DR Tracker</h1>
+  <table id="dr-table">
     <thead>
       <tr>
         <th>Pilota</th>
@@ -38,36 +44,30 @@
         <th>Ultimo aggiornamento</th>
       </tr>
     </thead>
-    <tbody id="table-body">
-      <tr><td colspan="3">Caricamento dati...</td></tr>
-    </tbody>
+    <tbody></tbody>
   </table>
 
   <script>
-    fetch("dr.csv")
-      .then(res => res.text())
-      .then(text => {
-        const lines = text.trim().split("\n").slice(1); // salta intestazione
-        const data = lines.map(line => {
-          const [pilota, dr, aggiornamento] = line.split(";");
-          return {
-            pilota: pilota.trim(),
-            dr: dr.trim(),
-            aggiornamento: aggiornamento.trim()
-          };
-        });
+    async function caricaCSV() {
+      const res = await fetch("dr.csv");
+      const text = await res.text();
+      const righe = text.trim().split("\n").slice(1); // ignora intestazione
+      const corpo = document.querySelector("#dr-table tbody");
+      corpo.innerHTML = "";
 
-        const tbody = document.getElementById("table-body");
-        tbody.innerHTML = "";
-        data.forEach(p => {
-          const row = `<tr><td>${p.pilota}</td><td>${p.dr}</td><td>${p.aggiornamento}</td></tr>`;
-          tbody.innerHTML += row;
+      righe.forEach(riga => {
+        const celle = riga.split(",");
+        const tr = document.createElement("tr");
+        celle.forEach(cella => {
+          const td = document.createElement("td");
+          td.textContent = cella;
+          tr.appendChild(td);
         });
-      })
-      .catch(err => {
-        console.error("Errore caricando dr.csv:", err);
-        document.getElementById("table-body").innerHTML = "<tr><td colspan='3'>Errore caricando i dati</td></tr>";
+        corpo.appendChild(tr);
       });
+    }
+
+    caricaCSV();
   </script>
 </body>
 </html>
