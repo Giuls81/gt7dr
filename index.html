@@ -1,45 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8">
   <title>GT7 DR Tracker</title>
   <style>
     body {
+      background-color: #121212;
+      color: #eee;
       font-family: Arial, sans-serif;
-      background-color: #0a0a0a;
-      color: #f0f0f0;
+      padding: 20px;
       text-align: center;
-      padding: 30px;
     }
-
-    h1 {
-      color: #00ffae;
-    }
-
     table {
       margin: auto;
       border-collapse: collapse;
-      width: 60%;
-      margin-top: 20px;
+      width: 80%;
     }
-
     th, td {
-      padding: 12px;
       border: 1px solid #444;
+      padding: 10px;
     }
-
     th {
-      background-color: #111;
+      background-color: #333;
     }
-
     tr:nth-child(even) {
       background-color: #1e1e1e;
     }
   </style>
 </head>
 <body>
-  <h1>GT7 DR Tracker</h1>
-  <table id="drTable">
+  <h1>Classifica DR - GT7</h1>
+  <table>
     <thead>
       <tr>
         <th>Pilota</th>
@@ -47,12 +38,38 @@
         <th>Ultimo aggiornamento</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="table-body">
+      <tr><td colspan="3">Caricamento dati...</td></tr>
+    </tbody>
   </table>
 
   <script>
-    fetch('dr.csv')
-      .then(response => response.text())
-      .then(csv => {
-        const rows = csv.trim().split('\n').slice(1); // salta intestazione
-        const data = rows
+    fetch("dr.csv")
+      .then(res => res.text())
+      .then(text => {
+        const lines = text.trim().split("\n").slice(1); // salta intestazione
+        const data = lines.map(line => {
+          const [pilota, dr, aggiornamento] = line.split(";");
+          return {
+            pilota: pilota.trim(),
+            dr: parseInt(dr.trim()),
+            aggiornamento: aggiornamento.trim()
+          };
+        }).filter(p => !isNaN(p.dr));
+
+        data.sort((a, b) => b.dr - a.dr);
+
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+        data.forEach(p => {
+          const row = `<tr><td>${p.pilota}</td><td>${p.dr}</td><td>${p.aggiornamento}</td></tr>`;
+          tbody.innerHTML += row;
+        });
+      })
+      .catch(err => {
+        console.error("Errore caricando dr.csv:", err);
+        document.getElementById("table-body").innerHTML = "<tr><td colspan='3'>Errore caricando i dati</td></tr>";
+      });
+  </script>
+</body>
+</html>
