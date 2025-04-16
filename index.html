@@ -1,42 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>GT7 DR Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #121212;
+      background-color: #0a0a0a;
       color: #f0f0f0;
       text-align: center;
-      padding: 2rem;
+      padding: 30px;
     }
+
     h1 {
-      color: #00bfff;
+      color: #00ffae;
     }
+
     table {
-      margin: 2rem auto;
+      margin: auto;
       border-collapse: collapse;
       width: 60%;
-      background-color: #1e1e1e;
+      margin-top: 20px;
     }
+
     th, td {
+      padding: 12px;
       border: 1px solid #444;
-      padding: 0.8rem;
     }
+
     th {
-      background-color: #2a2a2a;
-      color: #00ffcc;
+      background-color: #111;
     }
+
     tr:nth-child(even) {
-      background-color: #2d2d2d;
+      background-color: #1e1e1e;
     }
   </style>
 </head>
 <body>
   <h1>GT7 DR Tracker</h1>
-  <table id="dr-table">
+  <table id="drTable">
     <thead>
       <tr>
         <th>Pilota</th>
@@ -48,26 +51,8 @@
   </table>
 
   <script>
-    async function caricaCSV() {
-      const res = await fetch("dr.csv");
-      const text = await res.text();
-      const righe = text.trim().split("\n").slice(1); // ignora intestazione
-      const corpo = document.querySelector("#dr-table tbody");
-      corpo.innerHTML = "";
-
-      righe.forEach(riga => {
-        const celle = riga.split(",");
-        const tr = document.createElement("tr");
-        celle.forEach(cella => {
-          const td = document.createElement("td");
-          td.textContent = cella;
-          tr.appendChild(td);
-        });
-        corpo.appendChild(tr);
-      });
-    }
-
-    caricaCSV();
-  </script>
-</body>
-</html>
+    fetch('dr.csv')
+      .then(response => response.text())
+      .then(csv => {
+        const rows = csv.trim().split('\n').slice(1); // salta intestazione
+        const data = rows
