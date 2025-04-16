@@ -1,32 +1,73 @@
-
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>DR Piloti GT7</title>
-    <style>
-        body { font-family: Arial; background: #111; color: #fff; text-align: center; padding: 2rem; }
-        table { margin: auto; border-collapse: collapse; width: 80%; }
-        th, td { border: 1px solid #555; padding: 12px; }
-        th { background: #222; color: #ffd700; }
-        tr:nth-child(even) { background: #222; }
-        tr:hover { background: #333; }
-        h1 { color: #ffd700; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GT7 DR Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00bfff;
+    }
+    table {
+      margin: 2rem auto;
+      border-collapse: collapse;
+      width: 60%;
+      background-color: #1e1e1e;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 0.8rem;
+    }
+    th {
+      background-color: #2a2a2a;
+      color: #00ffcc;
+    }
+    tr:nth-child(even) {
+      background-color: #2d2d2d;
+    }
+  </style>
 </head>
 <body>
-    <h1>DR Points - Gran Turismo 7</h1>
-    <table>
-        <thead>
-            <tr><th>Pilota</th><th>DR Points</th><th>Ultimo aggiornamento</th></tr>
-        </thead>
-        <tbody>
-<tr><td>GT_Giuls_</td><td>58592</td><td>2025-04-16 03:38</td></tr>
-<tr><td>OP-A_carra7</td><td>59074</td><td>2025-04-16 03:38</td></tr>
-<tr><td>OP-A_Rey</td><td>51044</td><td>2025-04-16 03:38</td></tr>
-<tr><td>OP-A_Tombifofy</td><td>53512</td><td>2025-04-16 03:39</td></tr>
+  <h1>GT7 DR Tracker</h1>
+  <table id="dr-table">
+    <thead>
+      <tr>
+        <th>Pilota</th>
+        <th>DR</th>
+        <th>Ultimo aggiornamento</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-        </tbody>
-    </table>
+  <script>
+    async function caricaCSV() {
+      const res = await fetch("dr.csv");
+      const text = await res.text();
+      const righe = text.trim().split("\n").slice(1); // ignora intestazione
+      const corpo = document.querySelector("#dr-table tbody");
+      corpo.innerHTML = "";
+
+      righe.forEach(riga => {
+        const celle = riga.split(",");
+        const tr = document.createElement("tr");
+        celle.forEach(cella => {
+          const td = document.createElement("td");
+          td.textContent = cella;
+          tr.appendChild(td);
+        });
+        corpo.appendChild(tr);
+      });
+    }
+
+    caricaCSV();
+  </script>
 </body>
 </html>
