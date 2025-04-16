@@ -70,4 +70,25 @@
       .then(data => {
         const rows = data.trim().split('\n').slice(1);
         const parsed = rows.map(row => {
-          const [name, dr, updated] = row
+          const [name, dr, updated] = row.split(',');
+          return { name, dr: parseInt(dr), updated };
+        });
+
+        // Ordina per DR discendente
+        parsed.sort((a, b) => b.dr - a.dr);
+
+        const tbody = document.querySelector('#drTable tbody');
+        parsed.forEach((r, i) => {
+          const tr = document.createElement('tr');
+          if (i === 0) tr.classList.add('leader');
+          tr.innerHTML = `
+            <td>${i === 0 ? '🏆 ' : ''}${r.name}</td>
+            <td>${r.dr}</td>
+            <td>${r.updated}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+  </script>
+</body>
+</html>
