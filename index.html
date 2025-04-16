@@ -52,12 +52,10 @@
           const [pilota, dr, aggiornamento] = line.split(";");
           return {
             pilota: pilota.trim(),
-            dr: parseInt(dr.trim()),
+            dr: dr.trim(),
             aggiornamento: aggiornamento.trim()
           };
-        }).filter(p => !isNaN(p.dr));
-
-        data.sort((a, b) => b.dr - a.dr);
+        });
 
         const tbody = document.getElementById("table-body");
         tbody.innerHTML = "";
