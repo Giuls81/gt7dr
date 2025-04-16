@@ -1,73 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GT7 DR Tracker</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #f0f0f0;
-      text-align: center;
-      padding: 2rem;
-    }
-    h1 {
-      color: #00bfff;
-    }
-    table {
-      margin: 2rem auto;
-      border-collapse: collapse;
-      width: 60%;
-      background-color: #1e1e1e;
-    }
-    th, td {
-      border: 1px solid #444;
-      padding: 0.8rem;
-    }
-    th {
-      background-color: #2a2a2a;
-      color: #00ffcc;
-    }
-    tr:nth-child(even) {
-      background-color: #2d2d2d;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>GT7 DR Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+            background-color: #fff;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 10px;
+        }
+        th {
+            background-color: #222;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #eee;
+        }
+    </style>
 </head>
 <body>
-  <h1>GT7 DR Tracker</h1>
-  <table id="dr-table">
-    <thead>
-      <tr>
-        <th>Pilota</th>
-        <th>DR</th>
-        <th>Ultimo aggiornamento</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <script>
-    async function caricaCSV() {
-      const res = await fetch("dr.csv");
-      const text = await res.text();
-      const righe = text.trim().split("\n").slice(1); // ignora intestazione
-      const corpo = document.querySelector("#dr-table tbody");
-      corpo.innerHTML = "";
-
-      righe.forEach(riga => {
-        const celle = riga.split(",");
-        const tr = document.createElement("tr");
-        celle.forEach(cella => {
-          const td = document.createElement("td");
-          td.textContent = cella;
-          tr.appendChild(td);
-        });
-        corpo.appendChild(tr);
-      });
-    }
-
-    caricaCSV();
-  </script>
+    <h1>GT7 DR Tracker</h1>
+    <table>
+        <tr>
+            <th>Pilota</th>
+            <th>DR</th>
+            <th>Ultimo aggiornamento</th>
+        </tr>
+        <tr><td>OP-A_carra7</td><td>59074</td><td>16/04/2025 03:38</td></tr>
+        <tr><td>GT_Giuls_</td><td>58592</td><td>16/04/2025 03:38</td></tr>
+        <tr><td>OP-A_Tombifofy</td><td>53512</td><td>16/04/2025 03:39</td></tr>
+        <tr><td>OP-A_Rey</td><td>51044</td><td>16/04/2025 03:38</td></tr>
+    </table>
 </body>
 </html>
