@@ -1,94 +1,31 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>GT7 DR Tracker</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #e0e0e0;
-      margin: 40px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #fff;
-    }
-
-    table {
-      margin: 0 auto;
-      border-collapse: collapse;
-      width: 70%;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-    }
-
-    th {
-      background-color: #1f1f1f;
-      color: #ffffff;
-      padding: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    td {
-      padding: 10px;
-      border: 1px solid #333;
-    }
-
-    tr:nth-child(even) {
-      background-color: #1e1e1e;
-    }
-
-    tr:nth-child(odd) {
-      background-color: #181818;
-    }
-
-    .leader {
-      background-color: #33331a !important;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>DR Piloti GT7</title>
+    <style>
+        body { font-family: Arial; background: #111; color: #fff; text-align: center; padding: 2rem; }
+        table { margin: auto; border-collapse: collapse; width: 80%; }
+        th, td { border: 1px solid #555; padding: 12px; }
+        th { background: #222; color: #ffd700; }
+        tr:nth-child(even) { background: #222; }
+        tr:hover { background: #333; }
+        h1 { color: #ffd700; }
+    </style>
 </head>
 <body>
-  <h1>GT7 DR Tracker</h1>
-  <table id="drTable">
-    <thead>
-      <tr>
-        <th>Pilota</th>
-        <th>DR</th>
-        <th>Ultimo aggiornamento</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-
-  <script>
-    fetch('dr.csv')
-      .then(response => response.text())
-      .then(data => {
-        const rows = data.trim().split('\n').slice(1);
-        const parsed = rows.map(row => {
-          const [name, dr, updated] = row.split(',');
-          return { name, dr: parseInt(dr), updated };
-        });
-
-        // Ordina per DR discendente
-        parsed.sort((a, b) => b.dr - a.dr);
-
-        const tbody = document.querySelector('#drTable tbody');
-        parsed.forEach((r, i) => {
-          const tr = document.createElement('tr');
-          if (i === 0) tr.classList.add('leader');
-          tr.innerHTML = `
-            <td>${i === 0 ? '🏆 ' : ''}${r.name}</td>
-            <td>${r.dr}</td>
-            <td>${r.updated}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-  </script>
+    <h1>DR Points - Gran Turismo 7</h1>
+    <table>
+        <thead>
+            <tr><th>Pilota</th><th>DR Points</th><th>Ultimo aggiornamento</th></tr>
+        </thead>
+        <tbody>
+<tr><td>GT_Giuls_</td><td>56483974</td><td>2025-05-16 21:29</td></tr>
+<tr><td>OP-A_Giuls</td><td>538521387</td><td>2025-05-16 21:29</td></tr>
+<tr><td>OP-A_carra7</td><td>579597</td><td>2025-05-16 21:29</td></tr>
+<tr><td>OP-A_Rey</td><td>537163409</td><td>2025-05-16 21:30</td></tr>
+<tr><td>OP-A_Tombifofy</td><td>575763976</td><td>2025-05-16 21:30</td></tr>
+        </tbody>
+    </table>
 </body>
 </html>
