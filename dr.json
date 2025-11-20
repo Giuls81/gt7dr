@@ -1,8 +1,8 @@
 [
   {
     "psn": "MaxEpico1979",
-    "dr": 55904,
-    "delta": 55904,
+    "dr": 56410,
+    "delta": 56410,
     "wins": 5,
     "races": 32,
     "winrate": "15.6%"
@@ -25,11 +25,11 @@
   },
   {
     "psn": "Cjcerbola",
-    "dr": 7496,
-    "delta": 7496,
-    "wins": 9,
-    "races": 79,
-    "winrate": "11.4%"
+    "dr": 0,
+    "delta": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "Pepyx29_",
@@ -73,10 +73,10 @@
   },
   {
     "psn": "JigenBiker",
-    "dr": 15699,
-    "delta": 15699,
+    "dr": 16475,
+    "delta": 16475,
     "wins": 150,
-    "races": 1575,
+    "races": 1581,
     "winrate": "9.5%"
   },
   {
