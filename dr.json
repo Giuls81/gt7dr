@@ -24,12 +24,12 @@
     "winrate": "26.7%"
   },
   {
-    "psn": "Tibazzo",
-    "dr": 0,
-    "delta": 0,
-    "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "psn": "TiBazzo",
+    "dr": 42525,
+    "delta": 42525,
+    "wins": 1,
+    "races": 14,
+    "winrate": "7.1%"
   },
   {
     "psn": "Cjcerbola",
@@ -48,12 +48,12 @@
     "winrate": "0.0%"
   },
   {
-    "psn": "RKE_MWalter32",
-    "dr": 0,
-    "delta": 0,
-    "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "psn": "RKE_MWalter",
+    "dr": 30671,
+    "delta": 30671,
+    "wins": 6,
+    "races": 38,
+    "winrate": "15.8%"
   },
   {
     "psn": "MontyRidesAgain",
