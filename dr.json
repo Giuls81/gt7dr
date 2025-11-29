@@ -24,12 +24,12 @@
     "winrate": "26.9%"
   },
   {
-    "psn": "TiBazzo",
-    "dr": 42525,
-    "delta": 42525,
-    "wins": 1,
-    "races": 14,
-    "winrate": "7.1%"
+    "psn": "RKE_Bazzo",
+    "dr": 0,
+    "delta": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_Cjcerbola",
@@ -57,11 +57,11 @@
   },
   {
     "psn": "MontyRidesAgain",
-    "dr": 0,
-    "delta": 0,
+    "dr": 33557,
+    "delta": 33557,
     "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "races": 124,
+    "winrate": "0.0%"
   },
   {
     "psn": "Daviderom_91",
@@ -89,10 +89,10 @@
   },
   {
     "psn": "brummybulldog",
-    "dr": 0,
-    "delta": 0,
-    "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "dr": 52096,
+    "delta": 52096,
+    "wins": 11,
+    "races": 89,
+    "winrate": "12.4%"
   }
 ]
