@@ -1,86 +1,100 @@
 [
   {
     "psn": "RKE_MaxEpico1979",
-    "dr": 56305,
-    "wins": 8,
-    "races": 37,
-    "winrate": "21.6%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_Ekin",
-    "dr": 50135,
-    "wins": 20,
-    "races": 133,
-    "winrate": "15.0%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE__Giuls",
-    "dr": 56783,
-    "wins": 203,
-    "races": 745,
-    "winrate": "27.2%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_Bazzo",
-    "dr": 42525,
-    "wins": 1,
-    "races": 14,
-    "winrate": "7.1%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_Cjcerbola",
-    "dr": 7496,
-    "wins": 9,
-    "races": 79,
-    "winrate": "11.4%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_Pepyx29",
-    "dr": 20235,
+    "dr": 0,
     "wins": 0,
-    "races": 12,
-    "winrate": "0.0%"
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_MWalter",
-    "dr": 30671,
-    "wins": 6,
-    "races": 38,
-    "winrate": "15.8%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
+  },
+  {
+    "psn": "RKE__Carra7",
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
+  },
+  {
+    "psn": "RKE_Micky30",
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "MontyRidesAgain",
-    "dr": 33557,
+    "dr": 0,
     "wins": 0,
-    "races": 124,
-    "winrate": "0.0%"
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "Daviderom_91",
-    "dr": 18805,
-    "wins": 15,
-    "races": 90,
-    "winrate": "16.7%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "RKE_BALDO44",
-    "dr": 2,
+    "dr": 0,
     "wins": 0,
-    "races": 54,
-    "winrate": "0.0%"
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "JigenBiker",
-    "dr": 18434,
-    "wins": 151,
-    "races": 1594,
-    "winrate": "9.5%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   },
   {
     "psn": "brummybulldog",
-    "dr": 52096,
-    "wins": 11,
-    "races": 89,
-    "winrate": "12.4%"
+    "dr": 0,
+    "wins": 0,
+    "races": 0,
+    "winrate": "-"
   }
 ]
