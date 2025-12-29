@@ -1,100 +1,156 @@
 [
   {
     "psn": "RKE_MaxEpico1979",
-    "dr": 55338,
+    "dr": 55549,
+    "drPoints": 55549,
+    "medianRank": 2655,
     "wins": 1,
-    "races": 46,
-    "winrate": "2.2%"
+    "races": 53,
+    "top5": 18,
+    "poles": 15,
+    "winrate": "1.9%"
   },
   {
     "psn": "RKE_Ekin",
     "dr": 50135,
-    "wins": 20,
+    "drPoints": 50135,
+    "medianRank": 4544,
+    "wins": 3,
     "races": 133,
-    "winrate": "15.0%"
+    "top5": 9,
+    "poles": 20,
+    "winrate": "2.3%"
   },
   {
     "psn": "RKE__Giuls",
     "dr": 56782,
-    "wins": 203,
+    "drPoints": 56782,
+    "medianRank": 1097,
+    "wins": 1,
     "races": 746,
-    "winrate": "27.2%"
+    "top5": 12,
+    "poles": 311,
+    "winrate": "0.1%"
   },
   {
     "psn": "RKE_Bazzo",
     "dr": 42525,
-    "wins": 1,
+    "drPoints": 42525,
+    "medianRank": 7538,
+    "wins": 3,
     "races": 14,
-    "winrate": "7.1%"
+    "top5": 7,
+    "poles": 0,
+    "winrate": "21.4%"
   },
   {
     "psn": "RKE_Cjcerbola",
     "dr": 11065,
-    "wins": 10,
+    "drPoints": 11065,
+    "medianRank": 27906,
+    "wins": 3,
     "races": 85,
-    "winrate": "11.8%"
+    "top5": 15,
+    "poles": 6,
+    "winrate": "3.5%"
   },
   {
     "psn": "RKE_Pepyx29",
     "dr": 20235,
+    "drPoints": 20235,
+    "medianRank": 23236,
     "wins": 0,
     "races": 12,
+    "top5": 0,
+    "poles": 0,
     "winrate": "0.0%"
   },
   {
     "psn": "RKE_MWalter",
     "dr": 30671,
+    "drPoints": 30671,
+    "medianRank": 11959,
     "wins": 6,
     "races": 38,
+    "top5": 18,
+    "poles": 8,
     "winrate": "15.8%"
   },
   {
     "psn": "RKE__Carra7",
     "dr": 62950,
-    "wins": 74,
+    "drPoints": 62950,
+    "medianRank": 711,
+    "wins": 2,
     "races": 286,
-    "winrate": "25.9%"
+    "top5": 11,
+    "poles": 85,
+    "winrate": "0.7%"
   },
   {
     "psn": "RKE_Micky30",
     "dr": 52869,
+    "drPoints": 52869,
+    "medianRank": 941,
     "wins": 4,
     "races": 8,
+    "top5": 7,
+    "poles": 4,
     "winrate": "50.0%"
   },
   {
     "psn": "RKE_Monty",
-    "dr": 0,
+    "dr": 33557,
+    "drPoints": 33557,
+    "medianRank": 4420,
     "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "races": 124,
+    "top5": 5,
+    "poles": 5,
+    "winrate": "0.0%"
   },
   {
     "psn": "Daviderom_91",
     "dr": 18402,
-    "wins": 15,
+    "drPoints": 18402,
+    "medianRank": 45095,
+    "wins": 0,
     "races": 91,
-    "winrate": "16.5%"
+    "top5": 3,
+    "poles": 16,
+    "winrate": "0.0%"
   },
   {
     "psn": "RKE_BALDO44",
     "dr": 2,
+    "drPoints": 2,
+    "medianRank": 580055,
     "wins": 0,
-    "races": 64,
+    "races": 65,
+    "top5": 13,
+    "poles": 0,
     "winrate": "0.0%"
   },
   {
     "psn": "RKE_JigenBiker",
-    "dr": 0,
+    "dr": 18121,
+    "drPoints": 18121,
+    "medianRank": 12030,
     "wins": 0,
-    "races": 0,
-    "winrate": "-"
+    "races": 1602,
+    "top5": 2,
+    "poles": 223,
+    "winrate": "0.0%"
   },
   {
     "psn": "brummybulldog",
     "dr": 52096,
-    "wins": 11,
+    "drPoints": 52096,
+    "medianRank": 16955,
+    "wins": 0,
     "races": 89,
-    "winrate": "12.4%"
+    "top5": 5,
+    "poles": 18,
+    "winrate": "0.0%"
   }
 ]
