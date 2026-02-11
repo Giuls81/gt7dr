@@ -435,7 +435,7 @@ for psn in piloti:
 
         # GESTIONE AVATAR - Salva LOCALE per poi pushare su GitHub
         try:
-            avatar_el = WebDriverWait(driver, 10).until(
+            avatar_el = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTOR_AVATAR))
             )
             png_bytes = avatar_el.screenshot_as_png
