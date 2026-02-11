@@ -2,44 +2,40 @@ name: Weekly Scrape
 
 on:
   schedule:
-    # Run at 08:00 on Monday
-    - cron: '0 8 * * 1'
+    # 08:00 UTC ogni lunedì
+    - cron: "0 8 * * 1"
   workflow_dispatch:
 
 jobs:
   scrape-and-update:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Create Firebase Key
-      env:
-        FIREBASE_KEY_CONTENT: ${{ secrets.FIREBASE_KEY_CONTENT }}
-      run: |
-        echo "$FIREBASE_KEY_CONTENT" > firebase_key.json
+      - name: Create Firebase Key
+        run: echo "${{ secrets.FIREBASE_KEY_CONTENT }}" > firebase_key.json
 
-    - name: Run Scrape Script
-      run: python scrape_dr.py
+      - name: Run Scraper
+        run: python scrape_dr.py
 
-    - name: Upload artifacts (optional)
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: scrape-results
-        path: |
-          dr.json
-          anomalies.json
+      - name: Commit and Push Avatars
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add avatars/*.png || echo "No avatars to add"
+          git commit -m "Update driver avatars [skip ci]" || echo "No changes to commit"
+          git push

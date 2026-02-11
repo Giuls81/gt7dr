@@ -1,13 +1,14 @@
 """
-CI-ready / no GitHub / merge from Firestore / Storage Upload
+CI-ready / no GitHub / merge from Firestore / GitHub Avatar Hosting
 
 MODIFICHE PRINCIPALI:
 1. ChromeOptions configurato per headless Linux
 2. Gestione automatica chromedriver
 3. Merge da Firestore come stato precedente
-4. UPLOAD AVATAR SU FIREBASE STORAGE:
-   - Tenta di usare il bucket predefinito 'ragnarok-esports.appspot.com'
-   - Se fallisce, logga l'errore e continua (avatarUrl = "")
+4. AVATAR SU GITHUB:
+   - Salva gli avatar nella cartella locale 'avatars/'
+   - GitHub Action committerà e pusherà le nuove immagini
+   - L'URL salvato su Firestore sarà: https://raw.githubusercontent.com/Giuls81/GT7DR/main/avatars/{psn}.png
 5. Output locali dr.json/anomalies.json per debug
 """
 
@@ -26,7 +27,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
 
 # ============================================================
 #   LISTA PILOTI
@@ -58,7 +59,7 @@ piloti = PILOTI_LIST[:]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Cartella locale per debug (opzionale se usiamo Storage)
+# Cartella locale dove vengono salvati gli avatar (che poi verranno committati su GitHub)
 AVATAR_DIR = os.path.join(BASE_DIR, "avatars")
 os.makedirs(AVATAR_DIR, exist_ok=True)
 
@@ -69,8 +70,8 @@ FIRESTORE_COLLECTION = "drivers"
 APP_META_COLLECTION = "app_meta"
 APP_META_DOC = "latest"
 
-# Bucket Storage (Default: project-id.appspot.com)
-STORAGE_BUCKET_NAME = "ragnarok-esports.appspot.com"
+# URL base per gli avatar su GitHub (RAW)
+GITHUB_RAW_BASE_URL = "https://raw.githubusercontent.com/Giuls81/GT7DR/main/avatars"
 
 DEBUG_WINS = False
 
@@ -227,31 +228,22 @@ def get_values_with_fallback(driver, psn):
     return dr_points, wins, races, top5, poles, result_text
 
 # ============================================================
-#   FIREBASE & STORAGE
+#   FIREBASE
 # ============================================================
 
-def init_firebase():
-    """Inizializza Firestore e ritorna db e bucket."""
+def init_firestore():
+    """Inizializza Firestore. Ritorna None se fallisce."""
     if not os.path.exists(FIREBASE_SERVICE_ACCOUNT_FILE):
         print(f"ATTENZIONE: manca {FIREBASE_SERVICE_ACCOUNT_FILE}. Salto Firebase.")
-        return None, None
+        return None
     try:
         if not firebase_admin._apps:
             cred = credentials.Certificate(FIREBASE_SERVICE_ACCOUNT_FILE)
-            # Specifichiamo il bucket di storage
-            firebase_admin.initialize_app(cred, {
-                'storageBucket': STORAGE_BUCKET_NAME
-            })
-        
-        db = firestore.client()
-        
-        # Test veloce se bucket esiste
-        bucket = storage.bucket()
-        
-        return db, bucket
+            firebase_admin.initialize_app(cred)
+        return firestore.client()
     except Exception as e:
         print(f"ATTENZIONE: init Firebase fallita: {e}")
-        return None, None
+        return None
 
 def load_old_data_from_firestore(db, psn_list):
     """
@@ -286,27 +278,6 @@ def load_old_data_from_firestore(db, psn_list):
 
     return old_by_psn
 
-def upload_avatar_to_storage(bucket, psn, png_bytes):
-    """
-    Carica i bytes dell'immagine su Storage (avatars/PSN.png) e ritorna URL pubblico.
-    """
-    if bucket is None:
-        return ""
-    
-    blob_path = f"avatars/{psn}.png"
-    try:
-        blob = bucket.blob(blob_path)
-        blob.upload_from_file(io.BytesIO(png_bytes), content_type='image/png')
-        
-        # Rendiamo pubblico
-        blob.make_public()
-        
-        print(f"  ☁️  Avatar caricato su Storage: {blob.public_url}")
-        return blob.public_url
-    except Exception as e:
-        print(f"  ⚠️  Errore caricamento Storage per {psn}: {e}")
-        return ""
-
 def upload_to_firestore(db, final_results):
     """Carica i risultati finali su Firestore (drivers + app_meta/latest)."""
     if db is None:
@@ -332,8 +303,7 @@ def upload_to_firestore(db, final_results):
                 "top5": int(item.get("top5", 0) or 0),
                 "poles": int(item.get("poles", 0) or 0),
                 "winrate": str(item.get("winrate", "-")),
-                # AvatarUrl: se è vuoto nella nuova, usiamo quello vecchio se esisteva (gestito a monte o qui?)
-                # Qui item['avatarUrl'] dovrebbe essere già quello definitivo (nuovo o vecchio)
+                # AvatarUrl: se presente, usiamo URL GitHub. Altrimenti vuoto o vecchio.
                 "avatarUrl": item.get("avatarUrl", ""),
                 "updatedAt": now_iso,
             }
@@ -411,10 +381,10 @@ service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
 print("=== AGGIORNAMENTO DR PILOTI (Daily Race Stats) ===\n")
-print(f"Storage Bucket: {STORAGE_BUCKET_NAME}\n")
+print(f"Avatar Mode: GitHub Hosting ({GITHUB_RAW_BASE_URL})\n")
 
-# Inizializza Firestore/Storage e carica dati vecchi
-db, bucket = init_firebase()
+# Inizializza Firestore e carica dati vecchi
+db = init_firestore()
 old_by_psn = load_old_data_from_firestore(db, ALL_PILOTI)
 
 new_results = {}
@@ -463,21 +433,21 @@ for psn in piloti:
             else:
                 winrate = f"{(wins / races * 100):.1f}%" if races > 0 else "-"
 
-        # GESTIONE AVATAR
-        # 1. Tenta di scaricare quello nuovo
+        # GESTIONE AVATAR - Salva LOCALE per poi pushare su GitHub
         try:
             avatar_el = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTOR_AVATAR))
             )
             png_bytes = avatar_el.screenshot_as_png
             
-            # Upload su Storage se disponibile
-            current_avatar_url = upload_avatar_to_storage(bucket, psn, png_bytes)
-            
-            # Salvataggio locale per sicurezza/debug
+            # Salvataggio locale
             local_target = os.path.join(AVATAR_DIR, f"{psn}.png")
             with open(local_target, "wb") as f_img:
                 f_img.write(png_bytes)
+            
+            # Costruisci URL GitHub Raw
+            current_avatar_url = f"{GITHUB_RAW_BASE_URL}/{psn}.png"
+            print(f"  📸 Avatar salvato localmente -> URL futuro: {current_avatar_url}")
                 
         except Exception as e_avatar:
             print(f"  ⚠️  Impossibile acquisire avatar per {psn}: {e_avatar}")
@@ -517,7 +487,7 @@ for psn in ALL_PILOTI:
     if psn in new_results:
         # Abbiamo dati nuovi (o API ok)
         
-        # Se l'upload avatar è fallito (""), proviamo a mantenere quello vecchio se esiste
+        # Se l'avatar URL è vuoto, proviamo a mantenere quello vecchio se esiste
         res = new_results[psn]
         if not res["avatarUrl"]:
              old = old_by_psn.get(psn, {})
@@ -589,4 +559,4 @@ upload_to_firestore(db, final_results)
 print("\n✅ Operazione completata.")
 print("📌 Note:")
 print("   - dr.json e anomalies.json sono output locali/artifacts")
-print("   - Avatar caricati su Storage se configurato correttamente")
+print(f"   - GitHub Raw Avatar URL utilizzato per aggiornare Firestore: {GITHUB_RAW_BASE_URL}")
