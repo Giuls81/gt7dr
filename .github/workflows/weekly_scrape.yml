@@ -1,0 +1,45 @@
+name: Weekly Scrape
+
+on:
+  schedule:
+    # Run at 08:00 on Monday
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Create Firebase Key
+      env:
+        FIREBASE_KEY_CONTENT: ${{ secrets.FIREBASE_KEY_CONTENT }}
+      run: |
+        echo "$FIREBASE_KEY_CONTENT" > firebase_key.json
+
+    - name: Run Scrape Script
+      run: python scrape_dr.py
+
+    - name: Upload artifacts (optional)
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: scrape-results
+        path: |
+          dr.json
+          anomalies.json

@@ -1,0 +1,8 @@
+firebase_key.json
+venv/
+__pycache__/
+*.pyc
+avatars/
+output.txt
+comparison_result*.txt
+.env
