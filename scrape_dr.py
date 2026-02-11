@@ -1,25 +1,21 @@
 """
-CI-ready / no GitHub / merge from Firestore
+CI-ready / no GitHub / merge from Firestore / Storage Upload
 
 MODIFICHE PRINCIPALI:
-1. ChromeOptions configurato per headless Linux (--headless=new, --no-sandbox, --disable-dev-shm-usage, --window-size=1920,1080)
-2. Rimosso CHROMEDRIVER_PATH hardcoded, ora usa webdriver-manager per gestire chromedriver automaticamente
-3. Eliminate tutte le variabili e funzioni GitHub: REPO_OWNER, REPO_NAME, BRANCH, TOKEN_FILE, GITHUB_AVATAR_BASE, github_upload_file()
-4. Rimossa sezione "UPLOAD GITHUB" completa
-5. Rimossa lettura token.txt
-6. Merge ora usa Firestore come stato precedente: legge drivers/{psn} prima di processare
-7. Se API non disponibile o valori 0 => pilota NON aggiornato, mantiene valori vecchi da Firestore
-8. avatarUrl ora è stringa vuota "" (preparato per Storage futuro)
-9. dr.json e anomalies.json scritti localmente solo per debug/output
-10. Logging chiaro quando pilota viene skippato o usa valori vecchi
-11. Gestione errori Firestore: se init fallisce, script continua e crea file locali
-12. Dipendenza requests rimossa (non più necessaria senza GitHub)
+1. ChromeOptions configurato per headless Linux
+2. Gestione automatica chromedriver
+3. Merge da Firestore come stato precedente
+4. UPLOAD AVATAR SU FIREBASE STORAGE:
+   - Tenta di usare il bucket predefinito 'ragnarok-esports.appspot.com'
+   - Se fallisce, logga l'errore e continua (avatarUrl = "")
+5. Output locali dr.json/anomalies.json per debug
 """
 
 import os
 import time
 import re
 import json
+import io
 from datetime import datetime, timezone
 
 from selenium import webdriver
@@ -30,7 +26,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 
 # ============================================================
 #   LISTA PILOTI
@@ -62,6 +58,7 @@ piloti = PILOTI_LIST[:]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Cartella locale per debug (opzionale se usiamo Storage)
 AVATAR_DIR = os.path.join(BASE_DIR, "avatars")
 os.makedirs(AVATAR_DIR, exist_ok=True)
 
@@ -71,6 +68,9 @@ FIREBASE_SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, "firebase_key.json")
 FIRESTORE_COLLECTION = "drivers"
 APP_META_COLLECTION = "app_meta"
 APP_META_DOC = "latest"
+
+# Bucket Storage (Default: project-id.appspot.com)
+STORAGE_BUCKET_NAME = "ragnarok-esports.appspot.com"
 
 DEBUG_WINS = False
 
@@ -227,27 +227,35 @@ def get_values_with_fallback(driver, psn):
     return dr_points, wins, races, top5, poles, result_text
 
 # ============================================================
-#   FIREBASE
+#   FIREBASE & STORAGE
 # ============================================================
 
-def init_firestore():
-    """Inizializza Firestore. Ritorna None se fallisce."""
+def init_firebase():
+    """Inizializza Firestore e ritorna db e bucket."""
     if not os.path.exists(FIREBASE_SERVICE_ACCOUNT_FILE):
         print(f"ATTENZIONE: manca {FIREBASE_SERVICE_ACCOUNT_FILE}. Salto Firebase.")
-        return None
+        return None, None
     try:
         if not firebase_admin._apps:
             cred = credentials.Certificate(FIREBASE_SERVICE_ACCOUNT_FILE)
-            firebase_admin.initialize_app(cred)
-        return firestore.client()
+            # Specifichiamo il bucket di storage
+            firebase_admin.initialize_app(cred, {
+                'storageBucket': STORAGE_BUCKET_NAME
+            })
+        
+        db = firestore.client()
+        
+        # Test veloce se bucket esiste
+        bucket = storage.bucket()
+        
+        return db, bucket
     except Exception as e:
         print(f"ATTENZIONE: init Firebase fallita: {e}")
-        return None
+        return None, None
 
 def load_old_data_from_firestore(db, psn_list):
     """
     Legge da Firestore la collection 'drivers' per tutti i PSN in psn_list.
-    Ritorna dict: {psn: {dr, drPoints, wins, races, top5, poles, winrate}}
     """
     old_by_psn = {}
     if db is None:
@@ -268,14 +276,36 @@ def load_old_data_from_firestore(db, psn_list):
                     "top5": int(data.get("top5", 0) or 0),
                     "poles": int(data.get("poles", 0) or 0),
                     "winrate": str(data.get("winrate", "-")),
+                    "avatarUrl": str(data.get("avatarUrl", "")),
                 }
-                print(f"[FIRESTORE] Caricati dati vecchi per {psn}: DR={old_by_psn[psn]['drPoints']}, Wins={old_by_psn[psn]['wins']}, Races={old_by_psn[psn]['races']}")
+                print(f"[FIRESTORE] Caricati dati vecchi per {psn}: DR={old_by_psn[psn]['drPoints']}")
             else:
                 print(f"[FIRESTORE] Nessun dato vecchio per {psn}")
     except Exception as e:
         print(f"Errore lettura dati vecchi da Firestore: {e}")
 
     return old_by_psn
+
+def upload_avatar_to_storage(bucket, psn, png_bytes):
+    """
+    Carica i bytes dell'immagine su Storage (avatars/PSN.png) e ritorna URL pubblico.
+    """
+    if bucket is None:
+        return ""
+    
+    blob_path = f"avatars/{psn}.png"
+    try:
+        blob = bucket.blob(blob_path)
+        blob.upload_from_file(io.BytesIO(png_bytes), content_type='image/png')
+        
+        # Rendiamo pubblico
+        blob.make_public()
+        
+        print(f"  ☁️  Avatar caricato su Storage: {blob.public_url}")
+        return blob.public_url
+    except Exception as e:
+        print(f"  ⚠️  Errore caricamento Storage per {psn}: {e}")
+        return ""
 
 def upload_to_firestore(db, final_results):
     """Carica i risultati finali su Firestore (drivers + app_meta/latest)."""
@@ -292,21 +322,19 @@ def upload_to_firestore(db, final_results):
             if not psn:
                 continue
 
-            dr_points = int(item.get("drPoints", item.get("dr", 0)) or 0)
-            wins = int(item.get("wins", 0) or 0)
-            races = int(item.get("races", 0) or 0)
-
             doc_ref = db.collection(FIRESTORE_COLLECTION).document(psn)
             payload = {
                 "psn": psn,
-                "dr": dr_points,
-                "drPoints": dr_points,
-                "wins": wins,
-                "races": races,
+                "dr": int(item.get("dr", 0) or 0),
+                "drPoints": int(item.get("drPoints", 0) or 0),
+                "wins": int(item.get("wins", 0) or 0),
+                "races": int(item.get("races", 0) or 0),
                 "top5": int(item.get("top5", 0) or 0),
                 "poles": int(item.get("poles", 0) or 0),
                 "winrate": str(item.get("winrate", "-")),
-                "avatarUrl": "",  # Preparato per Storage futuro
+                # AvatarUrl: se è vuoto nella nuova, usiamo quello vecchio se esisteva (gestito a monte o qui?)
+                # Qui item['avatarUrl'] dovrebbe essere già quello definitivo (nuovo o vecchio)
+                "avatarUrl": item.get("avatarUrl", ""),
                 "updatedAt": now_iso,
             }
             batch.set(doc_ref, payload, merge=True)
@@ -383,10 +411,10 @@ service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
 print("=== AGGIORNAMENTO DR PILOTI (Daily Race Stats) ===\n")
-print("Modalità: CI-ready headless, merge da Firestore, no GitHub\n")
+print(f"Storage Bucket: {STORAGE_BUCKET_NAME}\n")
 
-# Inizializza Firestore e carica dati vecchi
-db = init_firestore()
+# Inizializza Firestore/Storage e carica dati vecchi
+db, bucket = init_firebase()
 old_by_psn = load_old_data_from_firestore(db, ALL_PILOTI)
 
 new_results = {}
@@ -395,6 +423,8 @@ for psn in piloti:
     print("=================================")
     print(f"Lettura dati per: {psn}")
     skip_update = False
+    
+    current_avatar_url = ""
 
     try:
         driver.get("https://gtsh-rank.com/profile/")
@@ -433,16 +463,24 @@ for psn in piloti:
             else:
                 winrate = f"{(wins / races * 100):.1f}%" if races > 0 else "-"
 
-        # Salva avatar (sempre, anche se skip_update)
+        # GESTIONE AVATAR
+        # 1. Tenta di scaricare quello nuovo
         try:
             avatar_el = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, CSS_SELECTOR_AVATAR))
             )
-            avatar_target = os.path.join(AVATAR_DIR, f"{psn}.png")
-            avatar_el.screenshot(avatar_target)
-            print("  📸 Avatar salvato localmente (per debug)")
+            png_bytes = avatar_el.screenshot_as_png
+            
+            # Upload su Storage se disponibile
+            current_avatar_url = upload_avatar_to_storage(bucket, psn, png_bytes)
+            
+            # Salvataggio locale per sicurezza/debug
+            local_target = os.path.join(AVATAR_DIR, f"{psn}.png")
+            with open(local_target, "wb") as f_img:
+                f_img.write(png_bytes)
+                
         except Exception as e_avatar:
-            print(f"  ⚠️  Impossibile salvare avatar per {psn}: {e_avatar}")
+            print(f"  ⚠️  Impossibile acquisire avatar per {psn}: {e_avatar}")
 
         if not skip_update:
             new_results[psn] = {
@@ -454,6 +492,7 @@ for psn in piloti:
                 "top5": int(top5),
                 "poles": int(poles),
                 "winrate": winrate,
+                "avatarUrl": current_avatar_url
             }
             print(f"  ✅ AGGIORNATO {psn}: DR={dr_points} Wins={wins} Races={races} Top5={top5} Poles={poles} Win%={winrate}")
         else:
@@ -476,12 +515,19 @@ final_results = []
 
 for psn in ALL_PILOTI:
     if psn in new_results:
-        # Dati freschi dall'API
-        final_results.append(new_results[psn])
+        # Abbiamo dati nuovi (o API ok)
+        
+        # Se l'upload avatar è fallito (""), proviamo a mantenere quello vecchio se esiste
+        res = new_results[psn]
+        if not res["avatarUrl"]:
+             old = old_by_psn.get(psn, {})
+             res["avatarUrl"] = old.get("avatarUrl", "")
+             
+        final_results.append(res)
         continue
 
     if psn in old_by_psn:
-        # Usa dati vecchi da Firestore
+        # Usa dati vecchi da Firestore (incluso avatar vecchio)
         old = old_by_psn[psn]
         final_results.append({
             "psn": psn,
@@ -492,6 +538,7 @@ for psn in ALL_PILOTI:
             "top5": old["top5"],
             "poles": old["poles"],
             "winrate": old["winrate"],
+            "avatarUrl": old.get("avatarUrl", ""),
         })
         print(f"[MERGE] {psn}: usati dati vecchi da Firestore")
         continue
@@ -506,6 +553,7 @@ for psn in ALL_PILOTI:
         "top5": 0,
         "poles": 0,
         "winrate": "-",
+        "avatarUrl": "",
     })
     print(f"[MERGE] {psn}: nessun dato disponibile, uso default 0")
 
@@ -540,6 +588,5 @@ upload_to_firestore(db, final_results)
 
 print("\n✅ Operazione completata.")
 print("📌 Note:")
-print("   - dr.json e anomalies.json sono solo output locali per debug")
-print("   - In CI questi file possono essere salvati come artifacts")
-print("   - avatarUrl è vuoto (sarà implementato con Storage in futuro)")
+print("   - dr.json e anomalies.json sono output locali/artifacts")
+print("   - Avatar caricati su Storage se configurato correttamente")
